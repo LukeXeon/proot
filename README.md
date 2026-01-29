@@ -32,8 +32,6 @@ if they trigger `SIGSYS` (Android related).
 Pattern acts like the `fnmatch()` one with the `FNM_PATHNAME` and `FNM_EXTMATCH` flags.
 *Experimental. No `open_by_handle_at` syscall support yet.*
 
-* `ANDROID_PRE5` make variable can be set in order to produce Android version < 5 (API < 21) compatible variant.
-
 * Hardlinks:
   * with broken meta info are not weird zombie files anymore. Now they are just dangling symlinks;
   * prefix `.l2s.` => `.proot.l2s.` for non-UserLAnd builds.

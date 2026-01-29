@@ -313,10 +313,15 @@ static int handle_sysenter_end(Tracee *tracee, Config *config)
 			}
 		};
 
-		if (config->actual_release == 0)
-			return 0;
-
 		flags = peek_reg(tracee, CURRENT, SYSARG_4);
+		if ((flags & ~(
+						AT_SYMLINK_NOFOLLOW|
+						AT_NO_AUTOMOUNT|
+						AT_EMPTY_PATH|
+						0x6000 /* AT_STATX_SYNC_TYPE aka. KSTAT_QUERY_FLAGS */
+					)) != 0)
+			return -EINVAL; /* Exposed by LTP.  */
+
 #if defined(ARCH_X86_64)
 		if ((flags & AT_SYMLINK_NOFOLLOW) != 0)
 			modif.new_sysarg_num = (get_abi(tracee) != ABI_2 ? PR_lstat : PR_lstat64);
@@ -329,14 +334,7 @@ static int handle_sysenter_end(Tracee *tracee, Config *config)
 			modif.new_sysarg_num = PR_stat64;
 #endif
 
-		if (modify_syscall(tracee, config, &modif)) {
-			// Do this check only if we are patching this syscall.
-			// New flags have been added since 2.6.38
-			// that we should not error on.
-			if ((flags & ~AT_SYMLINK_NOFOLLOW) != 0) {
-				return -EINVAL; /* Exposed by LTP.  */
-			}
-		}
+		modify_syscall(tracee, config, &modif);
 		return 0;
 	}
 
@@ -594,7 +592,6 @@ static void adjust_elf_auxv(Tracee *tracee, Config *config)
 	word_t stack_pointer;
 	void *argv_envp;
 	size_t size;
-	size_t reserve_size;
 	int status;
 
 	vectors_address = get_elf_aux_vectors_address(tracee);
@@ -661,11 +658,8 @@ static void adjust_elf_auxv(Tracee *tracee, Config *config)
 
 	/* Allocate enough room in tracee's stack for the new ELF
 	 * auxiliary vector.  */
-	reserve_size = 2 * sizeof_word(tracee);
-	/* Make sure the stack is still aligned */
-	reserve_size = ((reserve_size - 1) / STACK_ALIGNMENT + 1) * STACK_ALIGNMENT;
-	stack_pointer   -= reserve_size;
-	vectors_address -= reserve_size;
+	stack_pointer   -= 2 * sizeof_word(tracee);
+	vectors_address -= 2 * sizeof_word(tracee);
 
 	/* Note that it is safe to update the stack pointer manually
 	 * since we are in execve sysexit.  However it should be done
