@@ -82,7 +82,7 @@ static const Cli proot_cli = {
 	.synopsis = "proot [option] ... [command]",
 	.colophon = "Visit http://proot.me for help, bug reports, suggestions, patchs, ...\n\
 Copyright (C) 2015 STMicroelectronics, licensed under GPL v2 or later.\n\
-// Refined by Alex Kiselev see https://github.com/green-green-avk/proot for details.",
+Based on termux/proot with Android enhancements from green-green-avk/proot.",
 	.logo = "\
  _____ _____              ___\n\
 |  __ \\  __ \\_____  _____|   |_\n\
