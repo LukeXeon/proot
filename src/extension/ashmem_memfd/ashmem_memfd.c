@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>       /* strcmp, memset,  */
 #include <signal.h>
 #include <unistd.h>
 #include <sys/syscall.h>  /* __NR_memfd_create,  */
