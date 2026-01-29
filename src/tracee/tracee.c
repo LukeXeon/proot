@@ -35,6 +35,7 @@
 
 #include "tracee/tracee.h"
 #include "tracee/reg.h"
+#include "tracee/mem.h"
 #include "path/binding.h"
 #include "syscall/sysnum.h"
 #include "tracee/event.h"
@@ -45,7 +46,6 @@
 
 #include "compat.h"
 
-typedef LIST_HEAD(tracees, tracee) Tracees;
 static Tracees tracees;
 
 
@@ -399,6 +399,10 @@ int new_child(Tracee *parent, word_t clone_flags)
 	status = fetch_regs(parent);
 	if (status >= 0 && get_sysnum(parent, CURRENT) == PR_clone)
 		clone_flags = peek_reg(parent, CURRENT, SYSARG_1);
+        else if (status >= 0 && get_sysnum(parent, CURRENT) == PR_clone3)
+                // Look at the first word of the clone_args structure, which
+                // contains the usual clone flags.
+                clone_flags = peek_word(parent, peek_reg(parent, CURRENT, SYSARG_1));
 
 	/* Get the pid of the parent's new child.  */
 	status = ptrace(PTRACE_GETEVENTMSG, parent->pid, NULL, &pid);
@@ -455,6 +459,8 @@ int new_child(Tracee *parent, word_t clone_flags)
 		: talloc_memdup(child, parent->heap, sizeof(Heap));
 	if (child->heap == NULL)
 		return -ENOMEM;
+
+	child->load_info = talloc_reference(child, parent->load_info);
 
 	/* If CLONE_PARENT is set, then the parent of the new child
 	 * (as returned by getppid(2)) will be the same as that of the
@@ -632,4 +638,8 @@ void kill_all_tracees()
 
 	LIST_FOREACH(tracee, &tracees, link)
 		kill(tracee->pid, SIGKILL);
+}
+
+Tracees *get_tracees_list_head() {
+	return &tracees;
 }

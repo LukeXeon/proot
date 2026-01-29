@@ -141,6 +141,12 @@ typedef enum {
         /* link2symlink notifies other extensions when it is unlinking
          * a file */
         LINK2SYMLINK_UNLINK,
+
+	/* statx() syscall was used by tracee and is being replaced by proot
+	 * data1 argument contains pointer to statx_syscall_state struct
+	 * defined in tracee/statx.h
+	 * */
+	STATX_SYSCALL,
 } ExtensionEvent;
 
 #define CLONE_RECONF ((word_t) -1)
@@ -199,6 +205,8 @@ extern int hidden_files_callback(Extension *extension, ExtensionEvent event, int
 extern int port_switch_callback(Extension *extension, ExtensionEvent event, intptr_t d1, intptr_t d2);
 extern int link2symlink_callback(Extension *extension, ExtensionEvent event, intptr_t d1, intptr_t d2);
 extern int fix_symlink_size_callback(Extension *extension, ExtensionEvent event, intptr_t d1, intptr_t d2);
+extern int ashmem_memfd_callback(Extension *extension, ExtensionEvent event, intptr_t d1, intptr_t d2);
+extern int mountinfo_callback(Extension *extension, ExtensionEvent event, intptr_t d1, intptr_t d2);
 extern int tcsetsf2tcsets_callback(Extension *extension, ExtensionEvent event, intptr_t data1 UNUSED, intptr_t data2 UNUSED);
 extern int mute_setxid_callback(Extension *extension, ExtensionEvent event, intptr_t data1 UNUSED, intptr_t data2 UNUSED);
 extern int memfd_callback(Extension *extension, ExtensionEvent event, intptr_t data1, intptr_t data2 UNUSED);
