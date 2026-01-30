@@ -21,7 +21,7 @@ LD       = $(CC)
 
 CPPFLAGS += -D_FILE_OFFSET_BITS=64 -D_GNU_SOURCE -I. -I$(VPATH)
 CFLAGS   += -Wall -Wextra -O2
-LDFLAGS  += -ltalloc -Wl,-z,noexecstack
+LDFLAGS  += -ltalloc -Wl,-z,noexecstack,-z,max-page-size=16384
 
 OBJECTS += \
 	cli/cli.o		\
